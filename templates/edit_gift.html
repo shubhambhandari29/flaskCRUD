@@ -6,101 +6,97 @@
     <title>Edit Gift</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        body {
-            background-color: #faf0e6;
-            font-family: 'Arial', sans-serif;
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            background: url('/static/3.png') no-repeat center center fixed;
+            background-size: cover;
+        }
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(8px);
+            background-color: rgba(0, 0, 0, 0.3);
+            padding-top: 60px; /* Ensures navbar doesn't overlap */
         }
         .navbar {
-    background-color: #28282B; /* Consistent with existing design */
-}
-
-.navbar .dropdown-menu {
-    background-color: #28282B; /* Dropdown background */
-    border: none; /* Remove border */
-}
-
-.navbar .dropdown-item {
-    color: #faf0e6; /* Text color in dropdown */
-}
-
-.navbar .dropdown-item:hover {
-    background-color: #B31B1B; /* Highlight on hover */
-    color: white;
-}
-        .footer {
             background-color: #28282B;
+        }
+        .navbar a {
+            color: white !important;
+        }
+        .content-container {
+            margin-top: 20px;
+        }
+        .section-title {
             color: white;
-            padding: 20px 0;
-            text-align: center;
+            text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.7);
+        }
+        .btn-primary {
+            background-color: white;
+            color: black;
+            border: none;
+            font-size: 0.9rem;
+            padding: 6px 12px; /* Slightly smaller button */
+        }
+        .btn-primary:hover {
+            background-color: red; /* Light gray hover */
         }
     </style>
 </head>
 <body>
-
-    <nav class="navbar navbar-expand-lg navbar-dark">
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg">
         <div class="container">
-            <a class="navbar-brand" href="/">Gifties</a>
+            <a class="navbar-brand" href="/dashboard">Gifties</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
-                    {% if session.get('user_id') %}
-                    <!-- User Dropdown -->
                     <li class="nav-item">
                         <a class="nav-link" href="/add_gift">Add Gift</a>
                     </li>
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            {{ session.get('username') }}
-                        </a>
-                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-                            <li><a class="dropdown-item" href="/my_gifts">My Gifts</a></li>
-                            <li><a class="dropdown-item" href="/logout">Logout</a></li>
-                        </ul>
-                    </li>
-                    {% else %}
-                    <!-- When not logged in -->
                     <li class="nav-item">
-                        <a class="nav-link" href="/login">Login</a>
+                        <a class="nav-link" href="/my_gifts">My Gifts</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="/register">Register</a>
+                        <a class="nav-link" href="/logout">Logout</a>
                     </li>
-                    {% endif %}
                 </ul>
             </div>
         </div>
     </nav>
 
-    <div class="container mt-5">
-        <h1 class="text-center mb-4">Edit Gift</h1>
-        <form method="POST" enctype="multipart/form-data">
-            <div class="mb-3">
-                <label for="name" class="form-label">Gift Name</label>
-                <input type="text" id="name" name="name" class="form-control" value="{{ gift.name }}" required>
-            </div>
-            <div class="mb-3">
-                <label for="description" class="form-label">Description</label>
-                <textarea id="description" name="description" class="form-control" rows="3" required>{{ gift.description }}</textarea>
-            </div>
-            <div class="mb-3">
-                <label for="price" class="form-label">Price</label>
-                <input type="number" id="price" name="price" class="form-control" value="{{ gift.price }}" step="0.01" required>
-            </div>
-            <div class="mb-3">
-                <label for="image" class="form-label">Upload New Image (optional)</label>
-                <input type="file" id="image" name="image" class="form-control">
-                <small>Current Image:</small>
-                <img src="{{ gift.image_url }}" alt="{{ gift.name }}" class="img-fluid rounded" style="max-width: 200px;">
-            </div>
-            <button type="submit" class="btn btn-primary">Save Changes</button>
-        </form>
+    <!-- Hero Section -->
+    <div class="hero">
+        <div class="container content-container">
+            <h1 class="text-center text-white">Edit Gift</h1>
+            <form method="POST" enctype="multipart/form-data">
+                <div class="mb-3">
+                    <label for="name" class="form-label text-white">Gift Name</label>
+                    <input type="text" id="name" name="name" class="form-control" value="{{ gift.name }}" required>
+                </div>
+                <div class="mb-3">
+                    <label for="description" class="form-label text-white">Description</label>
+                    <textarea id="description" name="description" class="form-control" rows="3" required>{{ gift.description }}</textarea>
+                </div>
+                <div class="mb-3">
+                    <label for="price" class="form-label text-white">Price</label>
+                    <input type="number" id="price" name="price" class="form-control" value="{{ gift.price }}" step="0.01" required>
+                </div>
+                <div class="mb-3">
+                    <label for="image" class="form-label text-white">Upload New Image (optional)</label>
+                    <input type="file" id="image" name="image" class="form-control">
+                </div>
+                <button type="submit" class="btn btn-primary">Save Changes</button>
+            </form>
+        </div>
     </div>
-
-    <footer class="footer">
-        <p>&copy; 2024 Gifties. All Rights Reserved.</p>
-    </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>

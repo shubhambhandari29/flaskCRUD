@@ -15,19 +15,23 @@ def allowed_file(filename):
 def register_routes(app,db):
     @app.route("/")
     def home():
-        user_id = session.get("user_id")
-        if user_id:
-        # Exclude gifts of the logged-in user
-            gifts = db.session.query(Gift, User).join(User, Gift.seller_id == User.id).filter(
-            Gift.seller_id != user_id, Gift.sold == False
-        ).all()
-        else:
-        # Show all unsold gifts for anonymous users
-            gifts = db.session.query(Gift, User).join(User, Gift.seller_id == User.id).filter(
-            Gift.sold == False
-        ).all()
-
-        return render_template('home.html', gifts=gifts,logged_in="user_id" in session)
+        if "user_id" in session:
+            # Redirect authenticated users to their dashboard
+            return redirect(url_for('dashboard'))
+        return render_template('home.html')  # Landing page for unauthenticated users
+    
+    @app.route("/dashboard")
+    def dashboard():
+        if "user_id" not in session:
+            flash("Please log in to access the dashboard.", "warning")
+            return redirect(url_for('login'))
+        
+        # Load gifts excluding user's own
+        user_id = session["user_id"]
+        gifts = db.session.query(Gift, User).join(User, Gift.seller_id == User.id).filter(
+    Gift.seller_id != session['user_id'], Gift.sold == False
+).all()
+        return render_template('dashboard.html', gifts=gifts,logged_in="user_id" in session)
     
 
     @app.route("/login", methods=["GET", "POST"])

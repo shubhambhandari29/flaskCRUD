@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gifties - Home</title>
+    <title>Gifties - Welcome</title>
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
@@ -16,36 +16,66 @@
             background-color: #28282B;
         }
 
-        .navbar .dropdown-menu {
-            background-color: #28282B;
+        .hero {
+            position: relative;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('/static/3.png') no-repeat center center/cover;
+            filter: blur(8px); /* Blur effect for the background image */
+            z-index: 1;
+        }
+
+        .hero-content {
+            position: relative;
+            color: #faf0e6;
+            text-align: center;
+            z-index: 2; /* Ensures content is above the blurred background */
+        }
+
+        .hero-content h1 {
+            font-size: 3rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+        }
+
+        .hero-content p {
+            font-size: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .btn-primary {
+            background-color: #B31B1B;
             border: none;
         }
 
-        .navbar .dropdown-item {
-            color: #faf0e6;
+        .btn-primary:hover {
+            background-color: #8B0000;
         }
 
-        .navbar .dropdown-item:hover {
-            background-color: #B31B1B;
-            color: white;
+        .info-section {
+            padding: 40px 20px;
+            background-color: #faf0e6;
         }
 
-        .gift-card {
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            background-color: white;
-            margin: 15px 0;
-            transition: transform 0.2s;
+        .info-section h2 {
+            font-weight: bold;
+            margin-bottom: 20px;
         }
 
-        .gift-card:hover {
-            transform: scale(1.02);
-        }
-
-        .gift-card img {
-            height: 300px;  /* Consistent height */
-            width: 100%;
-            object-fit: cover;  /* Maintains aspect ratio and covers space */
+        .info-section p {
+            font-size: 1.1rem;
         }
 
         .footer {
@@ -67,76 +97,66 @@
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
-                    {% if session.get('user_id') %}
-                    <!-- User Dropdown -->
-                    <li class="nav-item">
-                        <a class="nav-link" href="/add_gift">Add Gift</a>
-                    </li>
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            {{ session.get('username') }}
-                        </a>
-                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-                            <li><a class="dropdown-item" href="/my_gifts">My Gifts</a></li>
-                            <li><a class="dropdown-item" href="/logout">Logout</a></li>
-                        </ul>
-                    </li>
-                    {% else %}
-                    <!-- When not logged in -->
                     <li class="nav-item">
                         <a class="nav-link" href="/login">Login</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="/register">Register</a>
                     </li>
-                    {% endif %}
                 </ul>
             </div>
         </div>
     </nav>
 
-    <!-- Carousel -->
-    <div id="carouselExampleFade" class="carousel slide carousel-fade">
-        <div class="carousel-inner">
-          <div class="carousel-item active">
-            <img src="/static/2.png" class="d-block w-100" alt="...">
-          </div>
-          <div class="carousel-item">
-            <img src="/static/1.png" class="d-block w-100" alt="...">
-          </div>
-          <div class="carousel-item">
-            <img src="/static/3.png" class="d-block w-100" alt="...">
-          </div>
-        </div>
-        <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleFade" data-bs-slide="prev">
-          <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-          <span class="visually-hidden">Previous</span>
-        </button>
-        <button class="carousel-control-next" type="button" data-bs-target="#carouselExampleFade" data-bs-slide="next">
-          <span class="carousel-control-next-icon" aria-hidden="true"></span>
-          <span class="visually-hidden">Next</span>
-        </button>
-      </div>
-
-    <!-- Main Content -->
-    <div class="container mt-5">
-        <h1 class="text-center mb-4">Available Gifts</h1>
-        <div class="row">
-            {% for gift, user in gifts %}
-            <div class="col-md-4">
-                <div class="gift-card p-3">
-                    <img src="{{ gift.image_url }}" alt="{{ gift.name }}" class="img-fluid rounded">
-                    <h4 class="mt-3">{{ gift.name }}</h4>
-                    <p><strong>Description:</strong> {{ gift.description }}</p>
-                    <p><strong>Price:</strong> ₹{{ "%.2f" | format(gift.price) }}</p>
-                    <p><strong>Listed By:</strong> {{ user.name }} ({{ user.email }})</p>
-                    <a href="/buy_gift/{{ gift.id }}" class="btn btn-primary mt-2">Buy Now</a>
-                </div>
-            </div>
-            {% endfor %}
+    <!-- Hero Section -->
+    <div class="hero">
+        <div class="hero-content">
+            <h1>Welcome to Gifties</h1>
+            <p>Your one-stop platform for finding and sharing amazing gifts!</p>
+            <a href="/register" class="btn btn-primary btn-lg me-3">Get Started</a>
+            <a href="/login" class="btn btn-outline-light btn-lg">Login</a>
         </div>
     </div>
 
+    <!-- Information Section -->
+    <div class="info-section text-center">
+        <div class="container">
+            <h2 class="mb-4">Why Choose Gifties?</h2>
+            <p class="mb-5">Gifties offers a seamless experience to browse, share, and buy unique gifts from around the world. Whether you're looking for something special for a loved one or have a unique item to share, Gifties is the perfect platform for all your gifting needs.</p>
+            <div class="row">
+                <!-- Card 1 -->
+                <div class="col-md-4">
+                    <div class="card shadow-sm h-100">
+                        <div class="card-body">
+                            <h4 class="card-title">Wide Variety</h4>
+                            <p class="card-text">Discover a wide range of unique and personalized gifts for every occasion.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Card 2 -->
+                <div class="col-md-4">
+                    <div class="card shadow-sm h-100">
+                        <div class="card-body">
+                            <h4 class="card-title">Secure Transactions</h4>
+                            <p class="card-text">Experience safe and reliable payment options for a hassle-free shopping experience.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Card 3 -->
+                <div class="col-md-4">
+                    <div class="card shadow-sm h-100">
+                        <div class="card-body">
+                            <h4 class="card-title">Community Driven</h4>
+                            <p class="card-text">Join a community of passionate gift enthusiasts and share your creativity.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+
+    <!-- Footer -->
     <footer class="footer">
         <p>&copy; 2024 Gifties. All Rights Reserved.</p>
     </footer>

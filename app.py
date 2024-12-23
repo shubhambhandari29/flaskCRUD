@@ -1,6 +1,6 @@
 from datetime import datetime
 import os
-from flask import Flask, flash, redirect, render_template, request, url_for, session
+from flask import Flask, flash, make_response, redirect, render_template, request, url_for, session
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
@@ -36,16 +36,26 @@ class Gift(db.Model):
     seller_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     date_listed = db.Column(db.DateTime, default=datetime.utcnow)
     sold = db.Column(db.Boolean, default=False)
-
     def __repr__(self):
         return f'<Gift {self.name}>'
+
 
 # Routes
 @app.route("/")
 def home():
-    """Home page showing all available gifts."""
-    gifts = Gift.query.filter_by(sold=False).all()
-    return render_template('home.html', gifts=gifts, logged_in="user_id" in session)
+    user_id = session.get("user_id")
+    if user_id:
+        # Exclude gifts of the logged-in user
+        gifts = db.session.query(Gift, User).join(User, Gift.seller_id == User.id).filter(
+            Gift.seller_id != user_id, Gift.sold == False
+        ).all()
+    else:
+        # Show all unsold gifts for anonymous users
+        gifts = db.session.query(Gift, User).join(User, Gift.seller_id == User.id).filter(
+            Gift.sold == False
+        ).all()
+
+    return render_template('home.html', gifts=gifts,logged_in="user_id" in session)
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
@@ -61,6 +71,10 @@ def login():
             return redirect(url_for('home'))
         else:
             flash("Invalid email or password", "danger")
+        
+    response = make_response(render_template('login.html'))
+    response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, post-check=0, pre-check=0, max-age=0'
+    response.headers['Pragma'] = 'no-cache'
     return render_template('login.html')
 
 @app.route("/logout")
@@ -142,7 +156,48 @@ def my_gifts():
         return redirect(url_for('login'))
     seller_id = session['user_id']
     gifts = Gift.query.filter_by(seller_id=seller_id).all()
-    return render_template('my_gifts.html', gifts=gifts)
+    return render_template('my_gifts.html', my_gifts=gifts)
+
+@app.route('/delete_gift/<int:id>', methods=['GET','POST'])
+def delete_gift(id):
+    gift = Gift.query.get_or_404(id)
+    db.session.delete(gift)
+    db.session.commit()
+    flash('Gift deleted successfully!', 'danger')
+    return redirect(url_for('my_gifts'))
+
+@app.route('/edit_gift/<int:id>', methods=['GET', 'POST'])
+def edit_gift(id):
+    gift = Gift.query.get_or_404(id)
+    if request.method == 'POST':
+        # Update gift details
+        gift.name = request.form['name']
+        gift.description = request.form['description']
+        gift.price = float(request.form['price'])
+        
+        # Handle image update if provided
+        image = request.files.get('image')
+        if image:
+            filename = image.filename
+            image_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            image.save(image_path)
+            gift.image_url = f'/static/uploads/{filename}'
+        
+        db.session.commit()
+        flash('Gift updated successfully!', 'success')
+        return redirect(url_for('my_gifts'))
+    
+    return render_template('edit_gift.html', gift=gift)
+
+@app.after_request
+def add_no_cache_headers(response):
+    """
+    Add headers to force the browser not to cache pages.
+    """
+    response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, post-check=0, pre-check=0, max-age=0'
+    response.headers['Pragma'] = 'no-cache'
+    response.headers['Expires'] = '-1'
+    return response
 
 # Initialize the database
 with app.app_context():

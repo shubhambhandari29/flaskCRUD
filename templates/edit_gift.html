@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gifties - Add Gift</title>
-    <!-- Bootstrap CSS -->
+    <title>Edit Gift</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body {
@@ -28,34 +27,16 @@
     background-color: #B31B1B; /* Highlight on hover */
     color: white;
 }
-        .add-gift-container {
-            max-width: 600px;
-            margin: 50px auto;
-            padding: 20px;
-            border-radius: 10px;
-            background-color: white;
-            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
-        }
-        .add-gift-container h2 {
-            text-align: center;
-            color: #28282B;
-        }
-        .form-control:focus {
-            border-color: #28282B;
-            box-shadow: 0 0 5px rgba(179, 27, 27, 0.5);
-        }
-        .btn-primary {
+        .footer {
             background-color: #28282B;
-            border: none;
-        }
-        .btn-primary:hover {
-            background-color: #a11212;
+            color: white;
+            padding: 20px 0;
+            text-align: center;
         }
     </style>
 </head>
 <body>
 
-    <!-- Navbar -->
     <nav class="navbar navbar-expand-lg navbar-dark">
         <div class="container">
             <a class="navbar-brand" href="/">Gifties</a>
@@ -66,6 +47,9 @@
                 <ul class="navbar-nav ms-auto">
                     {% if session.get('user_id') %}
                     <!-- User Dropdown -->
+                    <li class="nav-item">
+                        <a class="nav-link" href="/add_gift">Add Gift</a>
+                    </li>
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                             {{ session.get('username') }}
@@ -89,33 +73,35 @@
         </div>
     </nav>
 
-    <!-- Add Gift Form -->
-    <div class="add-gift-container">
-        <h2>Add a Gift</h2>
-        <form method="POST" action="/add_gift" enctype="multipart/form-data">
+    <div class="container mt-5">
+        <h1 class="text-center mb-4">Edit Gift</h1>
+        <form method="POST" enctype="multipart/form-data">
             <div class="mb-3">
                 <label for="name" class="form-label">Gift Name</label>
-                <input type="text" class="form-control" id="name" name="name" required>
+                <input type="text" id="name" name="name" class="form-control" value="{{ gift.name }}" required>
             </div>
             <div class="mb-3">
                 <label for="description" class="form-label">Description</label>
-                <textarea class="form-control" id="description" name="description" rows="3" required></textarea>
+                <textarea id="description" name="description" class="form-control" rows="3" required>{{ gift.description }}</textarea>
             </div>
             <div class="mb-3">
-                <label for="price" class="form-label">Price (₹)</label>
-                <input type="number" class="form-control" id="price" name="price" min="1" step="0.01" required>
+                <label for="price" class="form-label">Price</label>
+                <input type="number" id="price" name="price" class="form-control" value="{{ gift.price }}" step="0.01" required>
             </div>
             <div class="mb-3">
-                <label for="image" class="form-label">Upload Image</label>
-                <input type="file" class="form-control" id="image" name="image" accept="image/*" required>
+                <label for="image" class="form-label">Upload New Image (optional)</label>
+                <input type="file" id="image" name="image" class="form-control">
+                <small>Current Image:</small>
+                <img src="{{ gift.image_url }}" alt="{{ gift.name }}" class="img-fluid rounded" style="max-width: 200px;">
             </div>
-            <div class="d-grid">
-                <button type="submit" class="btn btn-primary">Add Gift</button>
-            </div>
+            <button type="submit" class="btn btn-primary">Save Changes</button>
         </form>
     </div>
 
-    <!-- Bootstrap JS -->
+    <footer class="footer">
+        <p>&copy; 2024 Gifties. All Rights Reserved.</p>
+    </footer>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

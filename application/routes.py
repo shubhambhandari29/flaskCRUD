@@ -1,6 +1,6 @@
 import os
 from flask import flash, make_response, redirect, render_template, request, session, url_for
-from models import User, Gift
+from models import User, Gift, Cart
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 
@@ -25,13 +25,13 @@ def register_routes(app,db):
         if "user_id" not in session:
             flash("Please log in to access the dashboard.", "warning")
             return redirect(url_for('login'))
-        
+        user = User.query.filter_by(id=session.get("user_id")).first()
         # Load gifts excluding user's own
-        user_id = session["user_id"]
         gifts = db.session.query(Gift, User).join(User, Gift.seller_id == User.id).filter(
     Gift.seller_id != session['user_id'], Gift.sold == False
 ).all()
-        return render_template('dashboard.html', gifts=gifts,logged_in="user_id" in session)
+        print("SESSSION", session)
+        return render_template('dashboard.html', wallet = user.wallet,  gifts=gifts,user=session.get('username'), logged_in="user_id" in session)
     
 
     @app.route("/login", methods=["GET", "POST"])
@@ -166,3 +166,62 @@ def register_routes(app,db):
             return redirect(url_for('my_gifts'))
         
         return render_template('edit_gift.html', gift=gift)
+    
+    @app.route("/add_to_cart/<int:gift_id>", methods=["GET", "POST"])
+    def add_to_cart(gift_id):
+        if "user_id" not in session:
+            flash("Please login to add items to your cart.", "warning")
+            return redirect(url_for("login"))
+
+        user_id = session["user_id"]
+        existing_item = Cart.query.filter_by(user_id=user_id, gift_id=gift_id).first()
+
+        if existing_item:
+            flash("Item is already in your cart.", "info")
+        else:
+            cart_item = Cart(user_id=user_id, gift_id=gift_id)
+            db.session.add(cart_item)
+            db.session.commit()
+            flash("Item added to cart!", "success")
+
+        return redirect(url_for("dashboard"))
+    
+    @app.route("/cart", methods=["GET", "POST"])
+    def view_cart():
+        if "user_id" not in session:
+            flash("Please login to view your cart.", "warning")
+            return redirect(url_for("login"))
+
+        user_id = session["user_id"]
+        cart_items = db.session.query(Cart, Gift).join(Gift, Cart.gift_id == Gift.id).filter(Cart.user_id == user_id).all()
+        user = User.query.get(user_id)
+        if request.method == "POST":
+            selected_items = request.form.getlist("selected_items")
+            total_cost = sum(float(Gift.query.get(int(item_id)).price) for item_id in selected_items)
+            if total_cost > user.wallet:
+                flash("Insufficient funds in wallet!", "danger")
+            else:
+                for item_id in selected_items:
+                    gift = Gift.query.get(int(item_id))
+                    gift.sold = True
+                    db.session.query(Cart).filter_by(user_id=user_id, gift_id=gift.id).delete()
+
+                user.wallet -= total_cost
+                db.session.commit()
+                flash("Purchase successful!", "success")
+
+            return redirect(url_for("view_cart"))
+
+        return render_template("cart.html",user=session.get('username'), wallet = user.wallet, cart_items=cart_items)
+    
+    @app.route("/remove_from_cart/<int:cart_id>", methods=["POST"])
+    def remove_from_cart(cart_id):
+        if "user_id" not in session:
+            flash("Please login to modify your cart.", "warning")
+            return redirect(url_for("login"))
+
+        cart_item = Cart.query.get_or_404(cart_id)
+        db.session.delete(cart_item)
+        db.session.commit()
+        flash("Item removed from cart.", "success")
+        return redirect(url_for("view_cart"))

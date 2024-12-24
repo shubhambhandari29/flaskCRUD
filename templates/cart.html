@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gifties - Dashboard</title>
+    <title>Gifties - Cart</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body, html {
@@ -21,7 +21,7 @@
             align-items: center;
             backdrop-filter: blur(8px);
             background-color: rgba(0, 0, 0, 0.3);
-            padding-top: 60px; /* Ensures navbar doesn't overlap */
+            padding-top: 60px;
         }
         .navbar {
             background-color: #28282B;
@@ -31,53 +31,110 @@
         }
         .content-container {
             margin-top: 20px;
+            width: 100%;
+            max-width: 1000px; /* Reduced max-width for more compact layout */
         }
         .navbar .dropdown-menu {
             background-color: #28282B;
             border: none;
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
         }
-
         .navbar .dropdown-item {
             color: white !important;
         }
-
         .navbar .dropdown-item:hover {
             background-color: red;
         }
         .section-title {
             color: white;
             text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.7);
+            margin-bottom: 30px;
         }
         .card {
             border: none;
             box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
-            background-color: #28282B; /* Black card background */
-            color: white; /* White text color */
+            background-color: #28282B;
+            color: white;
             border-radius: 10px;
+            margin-bottom: 20px;
+            height: 200px; /* Fixed height for all cards */
+            overflow: hidden;
+        }
+        .card .row {
+            height: 100%;
+        }
+        .card .col-md-4 {
+            height: 100%;
+        }
+        .card .col-md-8 {
+            height: 100%;
         }
         .card img {
-            border-radius: 10px 10px 0 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 10px 0 0 10px;
         }
         .card-body {
-            font-size: 0.9rem; /* Slightly smaller text */
+            font-size: 0.9rem;
+            padding: 15px;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .card-title {
+            margin-bottom: 5px;
+            font-size: 1.1rem;
+        }
+        .card-text {
+            margin-bottom: 5px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            font-size: 0.85rem;
         }
         .btn-primary {
             background-color: white;
             color: black;
             border: none;
             font-size: 0.9rem;
-            padding: 6px 12px; /* Slightly smaller button */
+            padding: 6px 12px;
+            margin-right: 10px;
         }
         .btn-primary:hover {
-            background-color: red; /* Light gray hover */
+            background-color: red;
+            color: white;
         }
-        .no-gifts-message {
+        .btn-danger {
+            background-color: #dc3545;
+            border: none;
+            font-size: 0.9rem;
+            padding: 6px 12px;
+        }
+        .btn-danger:hover {
+            background-color: #bb2d3b;
+        }
+        .checkout-section {
+            margin-top: 20px;
+            text-align: right;
+        }
+        .form-check-input {
+            margin-left: 10px;
+        }
+        .empty-cart-message {
             color: white;
             font-size: 1.5rem;
             text-align: center;
             margin-top: 50px;
             text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.7);
+        }
+        .card-actions {
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            margin-top: auto;
         }
     </style>
 </head>
@@ -85,7 +142,7 @@
     <!-- Navbar -->
     <nav class="navbar navbar-expand-lg">
         <div class="container">
-            <a class="navbar-brand" href="#">Gifties</a>
+            <a class="navbar-brand" href="/dashboard">Gifties</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
@@ -101,14 +158,15 @@
                         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
                             <li><a class="dropdown-item" href="/cart">My Cart</a></li>
                             <li><a class="dropdown-item" href="/my_gifts">My Listed Gifts</a></li>
-                            <li class="dropdown-item" > wallet balance : {{wallet}}</li>
+                            <li class="dropdown-item">wallet balance : {{wallet}}</li>
                             <li><a class="dropdown-item" href="/logout">Logout</a></li>
                         </ul>
-                        </li>
+                    </li>
                 </ul>
             </div>
         </div>
     </nav>
+
     <div class="container flash-message">
         {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
@@ -123,31 +181,45 @@
         {% endif %}
         {% endwith %}
     </div>
+
     <!-- Hero Section -->
     <div class="hero">
         <div class="container content-container">
-            {% if gifts|length > 0 %}
-            <h2 class="section-title text-center">Available Gifts</h2>
-            <div class="row mt-4">
-    {% for gift, user in gifts %}
-    <div class="col-md-4">
-        <div class="card mb-4" style="height: 400px; display: flex; flex-direction: column; justify-content: space-between;">
-            <div style="height: 200px; overflow: hidden;">
-                <img src="{{ gift.image_url }}" class="card-img-top" alt="{{ gift.name }}" style="height: 100%; width: 100%; object-fit: cover;">
-            </div>
-            <div class="card-body">
-                <h5 class="card-title">{{ gift.name }}</h5>
-                <p class="card-text">{{ gift.description }}</p>
-                <p><strong>Price:</strong> ₹{{ "%.2f" | format(gift.price) }}</p>
-                <a href="/add_to_cart/{{ gift.id }}" class="btn btn-primary">Add to Cart</a>
-            </div>
-        </div>
-    </div>
-    {% endfor %}
-</div>
+            <h2 class="section-title text-center">Your Cart</h2>
+            {% if cart_items|length > 0 %}
+            <form method="POST">
+                {% for cart, gift in cart_items %}
+                <div class="card">
+                    <div class="row g-0">
+                        <div class="col-md-4">
+                            <img src="{{ gift.image_url }}" alt="{{ gift.name }}">
+                        </div>
+                        <div class="col-md-8">
+                            <div class="card-body">
+                                <div>
+                                    <h5 class="card-title">{{ gift.name }}</h5>
+                                    <p class="card-text">{{ gift.description }}</p>
+                                    <p class="card-text"><strong>Price:</strong> ₹{{ "%.2f"|format(gift.price) }}</p>
+                                </div>
+                                <div class="card-actions">
+                                    <button formaction="/remove_from_cart/{{ cart.id }}" class="btn btn-danger">Remove</button>
+                                    <div class="form-check ms-3">
+                                        <input class="form-check-input" type="checkbox" name="selected_items" value="{{ gift.id }}" id="check-{{ gift.id }}">
+                                        <label class="form-check-label" for="check-{{ gift.id }}">Select for purchase</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+                <div class="checkout-section">
+                    <button type="submit" class="btn btn-primary">Buy Selected Items</button>
+                </div>
+            </form>
             {% else %}
-            <div class="no-gifts-message">
-                All the gifts are sold!
+            <div class="empty-cart-message">
+                Your cart is empty!
             </div>
             {% endif %}
         </div>

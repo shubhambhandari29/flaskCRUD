@@ -8,7 +8,7 @@ def create_app():
     app.secret_key = 'your_secret_key'
     app.config['UPLOAD_FOLDER'] = 'static/uploads'
     db.init_app(app=app)
-    from application.app import register_routes
+    from application.routes import register_routes
     register_routes(app,db)
     migrate = Migrate(app,db)
 

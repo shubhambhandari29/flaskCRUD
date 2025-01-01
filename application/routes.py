@@ -1,6 +1,6 @@
 import os
 from flask import flash, make_response, redirect, render_template, request, session, url_for
-from application.models import User, Gift, Cart
+from models import User, Gift, Cart
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 

@@ -1,1 +1,8 @@
-/static/uploads
+env/
+__pycache__/
+*.pyc
+*.db
+instance/
+migrations/
+static/uploads
+application/__pycache__/

@@ -8,7 +8,7 @@ def create_app():
     app.secret_key = 'your_secret_key'
     app.config['UPLOAD_FOLDER'] = 'static/uploads'
     db.init_app(app=app)
-
+    from application.models import User, Gift, Cart
     with app.app_context():
         print("HEEEE")
         db.create_all()
